@@ -1,0 +1,24 @@
+{
+  "name": "activity-weather-ranker",
+  "version": "0.1.0",
+  "description": "Backend service that ranks activities based on 7-day weather forecast",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "db:migrate": "ts-node src/db/migrate.ts"
+  },
+  "dependencies": {
+    "@apollo/server": "^4.11.0",
+    "dotenv": "^16.4.0",
+    "graphql": "^16.9.0",
+    "pg": "^8.13.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/pg": "^8.11.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.0"
+  }
+}
