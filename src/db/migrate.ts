@@ -28,7 +28,7 @@ async function migrate() {
   await pool.end();
 }
 
-migrate().catch((e) => {
-  console.error(e);
+migrate().catch((e: unknown) => {
+  console.error("Migration failed:", e);
   process.exit(1);
 });
