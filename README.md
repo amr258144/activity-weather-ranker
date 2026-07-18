@@ -22,7 +22,7 @@ Server starts at `http://localhost:4000` (Apollo Sandbox).
 
 ```graphql
 query {
-  rankActivities(city: "Chamonix") {
+  rankActivities(city: "Mumbai") {
     city
     days {
       date
@@ -35,16 +35,15 @@ query {
 }
 ```
 
-## Assumptions
+## How I Approached This
 
-- No authentication required.
-- "Persist" means cache with a TTL (default 3 hours), not a permanent historical archive.
-- Uses Open-Meteo's geocoding API to resolve city name to lat/lon.
+The exercise intentionally leaves several implementation details open. In a day-to-day team setting, I would normally sync with a Product Manager or team members to validate requirements. For this challenge, I moved forward with the following assumptions:
+
+- No authentication required for this scope.
+- I interpreted "persist" as caching forecast data in PostgreSQL and refreshing it after a configurable TTL, rather than storing a historical weather archive.
 - Wind speed is used as a proxy for surf/wave conditions — Open-Meteo's free tier does not provide swell data. A real implementation would use a marine API.
-- Scoring weights are opinionated and would normally be validated with product/domain experts.
-- A city name is stored lowercased for consistent cache lookups.
-- Cache is considered fresh if all 7 future days are present and `fetched_at` is within the TTL window.
-- `CACHE_TTL_HOURS` defaults to 3 but is configurable via `.env`.
+- Uses Open-Meteo's geocoding API to resolve city names to lat/lon coordinates.
+- Scoring weights are opinionated and heuristic-based. In a production feature, these would be iterated on with domain experts.
 
 ## Design Decisions
 
@@ -64,8 +63,18 @@ Forecasts are cached with a `fetched_at` timestamp and refreshed on the next req
 
 Scores are sorted descending per day so the best activity appears first.
 
-## What I'd Add With More Time
-- Background refresh worker (cron / pg_cron) — so users don't pay the latency cost of a cache miss
-- Error-handling middleware — right now errors bubble up as raw Apollo errors with no consistent shape
-- Rate limiting — Open-Meteo has request limits and a single client could exhaust them
-- Swell data from a marine API for more accurate surf scoring
+## Trade-offs & Future Improvements
+- Refresh forecasts synchronously on cache expiry rather than introducing background workers. Background refresh worker (cron / pg_cron) can be added in future.
+- Error-handling middleware — right now errors bubble up as raw Apollo errors with no consistent shape.
+- Rate limiting — Open-Meteo has request limits and a single client could exhaust them.
+- Swell data from a marine API for more accurate surf scoring.
+
+## AI Usage
+The assignment explicitly encouraged AI usage. I used ChatGPT primarily for:
+- brainstorming the data model
+- generating and refining GraphQL boilerplate
+- reviewing TypeScript types
+- debugging implementation issues
+- sanity-check design decisions
+
+I reviewed, modified, and tested all AI-generated code before committing it.
