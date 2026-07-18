@@ -65,7 +65,6 @@ Forecasts are cached with a `fetched_at` timestamp and refreshed on the next req
 Scores are sorted descending per day so the best activity appears first.
 
 ## What I'd Add With More Time
-- Retry mechanism (if fails to fetch data from geocoding or forcast API)
 - Background refresh worker (cron / pg_cron) — so users don't pay the latency cost of a cache miss
 - Error-handling middleware — right now errors bubble up as raw Apollo errors with no consistent shape
 - Rate limiting — Open-Meteo has request limits and a single client could exhaust them
