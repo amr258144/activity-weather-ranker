@@ -12,24 +12,30 @@ export interface DayWeather {
   cloud_cover_mean: number;
 }
 
-async function fetchFromApi(lat: number, lon: number): Promise<DayWeather[]> {
+async function fetchFromApi(lat: number, lon: number, retries = 3): Promise<DayWeather[]> {
   const url =
     `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
     `&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,snowfall_sum,wind_speed_10m_max,cloud_cover_mean` +
     `&forecast_days=7&timezone=auto`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Weather API error: ${res.status}`);
-  const data: any = await res.json();
-  const d = data.daily;
-  return d.time.map((date: string, i: number) => ({
-    date,
-    temperature_max: d.temperature_2m_max[i],
-    temperature_min: d.temperature_2m_min[i],
-    precipitation_mm: d.precipitation_sum[i],
-    snowfall_cm: d.snowfall_sum[i],
-    wind_speed_max: d.wind_speed_10m_max[i],
-    cloud_cover_mean: d.cloud_cover_mean[i],
-  }));
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    const res = await fetch(url);
+    if (res.ok) {
+      const data: any = await res.json();
+      const d = data.daily;
+      return d.time.map((date: string, i: number) => ({
+        date,
+        temperature_max: d.temperature_2m_max[i],
+        temperature_min: d.temperature_2m_min[i],
+        precipitation_mm: d.precipitation_sum[i],
+        snowfall_cm: d.snowfall_sum[i],
+        wind_speed_max: d.wind_speed_10m_max[i],
+        cloud_cover_mean: d.cloud_cover_mean[i],
+      }));
+    }
+    if (attempt === retries) throw new Error(`Weather API error: ${res.status}`);
+    await new Promise(r => setTimeout(r, 200 * attempt));
+  }
+  throw new Error("Weather fetch failed"); // unreachable, satisfies TS
 }
 
 async function getCachedData(cityId: number): Promise<DayWeather[] | null> {
